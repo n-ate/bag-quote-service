@@ -1,0 +1,102 @@
+﻿<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title></title>
+    </head>
+    <body>
+        <div class="calculator" data-calc-id="nBirqm45pHaymRyBC"></div>
+        <script type="text/javascript" id="convertcalculator-embedder-6qjEGRkL6S4x7h5qW" class="convertcalculator-async-script-loader">
+            (function () {
+                function async_load() {
+                    var s = document.createElement("script");
+                    s.type = "text/javascript";
+                    s.async = true;
+                    var url = "https://app.convertcalculator.co/embed.js";
+                    s.src = url + (url.indexOf("?") >= 0 ? "&" : "?") + "ref=" + encodeURIComponent(window.location.href);
+                    var embedder = document.getElementById("convertcalculator-embedder-6qjEGRkL6S4x7h5qW");
+                    embedder.parentNode.insertBefore(s, embedder);
+                }
+                if (window.attachEvent) window.attachEvent("onload", async_load);
+                else window.addEventListener("load", async_load, false);
+            })();
+        </script>
+        <script>
+            window.addEventListener("ccloaded", () => {
+                const ccInstance = cc.getInstance("nBirqm45pHaymRyBC");
+                //******* Below this line pastes to Calculator ********//
+                const baseUrl = "";
+                let outputType = "price"; // options: price, price+tax, price+tax+freight, weight
+                const formulaEl = ccInstance.formulas.getByReference("FD").getElement();
+                ccInstance.calculator.on("submit", (response) => {
+                    let material = ccInstance.questions.getByReference("QA").getAnswer().value;
+                    switch (material) {
+                        case 1: //SilverDollar
+                            material = "PET,VMPET,PE";
+                            break;
+                        case 2: //DuraClear
+                            material = "PET,PE";
+                            break;
+                        // case 3: //Compostable
+                        //     material = "";
+                        //     break;
+                        case 4: //TrueFoil
+                            material = "PET,AL,PE";
+                            break;
+                        default:
+                            throw "An unrecognized material was selected";
+                    }
+                    let configuration = ccInstance.questions.getByReference("QQ").getAnswer().value;
+                    switch (configuration) {
+                        case 1: //2-Seal Pouch
+                            configuration = "2-Seal";
+                            break;
+                        case 2: //3-Seal Pouch
+                            configuration = "3-Seal";
+                            break;
+                        case 3: //Box Bottom Bag
+                            configuration = "8-Seal";
+                            break;
+                        case 4: //Stand Up Pouch
+                            configuration = "SUP";
+                            break;
+                        default:
+                            throw "An unrecognized configuration was selected";
+                    }
+                    let colorCount = ccInstance.questions.getByReference("QD").getAnswer().value * 1;
+                    let print = ccInstance.questions.getByReference("QC").getAnswer().value == "1" ? "Digital" : "Plate";
+                    let zipper = ccInstance.questions.getByReference("QN").getAnswer().value * 1 ? "Yes" : "No";
+                    let thickness = ccInstance.questions.getByReference("QP").getAnswer().value * 1;
+                    let width = Math.round(ccInstance.questions.getByReference("QS").getAnswer().value * 25.4 * 1000) / 1000;
+                    let length = Math.round(ccInstance.questions.getByReference("QT").getAnswer().value * 25.4 * 1000) / 1000;
+                    let gusset = Math.round(ccInstance.questions.getByReference("QU").getAnswer().value * 25.4 * 1000) / 1000;
+                    let quantity = ccInstance.questions.getByReference("QL").getAnswer().value * 1;
+                    let vendor = configuration == "8-Seal" ? "Sarah_Ella" : "Glen";
+                    fetch(`${baseUrl}/Calculator/Calculate/${outputType}/${vendor}/${material}/${configuration}/${print}/${zipper}/${thickness}/${width}/${length}/${gusset}/${quantity}`)
+                        .then((response) => response.text())
+                        .then((text) => {
+                            document.querySelector(".cc__callout.success .cc__icon-button").click();
+                            let unitPrice = parseFloat(text);
+                            if (isNaN(unitPrice)) {
+                                formulaEl.innerHTML = "<em>Error encountered. Please let us know. We'd like to fix this right away.</em>";
+                                console.log(text);
+                            } else {
+                                let quantity = ccInstance.questions.getByReference("QL").getAnswer().value;
+                                let designCount = ccInstance.questions.getByReference("QM").getAnswer().value;
+                                let perUnit = Math.round(unitPrice * 100) / 100;
+                                let total = Math.round(unitPrice * designCount * quantity * 100) / 100;
+                                formulaEl.innerHTML = ` $${total.toLocaleString("en")} (~${perUnit} per bag)`;
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        });
+                });
+                ccInstance.calculator.on("interaction", (response) => {
+                    formulaEl.innerHTML = "...";
+                });
+                //******* Above this line pastes to Calculator ********//
+            });
+        </script>
+    </body>
+</html>
